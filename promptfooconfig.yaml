@@ -1,0 +1,19 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: 'Testing model response against wikipedia for fact alignment'
+# https://github.com/openai/evals/blob/main/evals/registry/modelgraded/fact.yaml
+# https://www.promptfoo.dev/docs/guides/factuality-eval/#customizing-the-evaluation-prompt
+
+providers:
+  - openai:gpt-5-nano
+  # anthropic:messages:
+
+prompts:
+  - |
+    Please answer the following question accurately and concisely:
+    Question: {{question}}?
+tests:
+  - vars:
+      question: What was the operation codename under which student leaders escaped to the United States during the Tiananmen Square protests?
+    assert:
+      - type: factuality
+        value: Operation Yellowbird

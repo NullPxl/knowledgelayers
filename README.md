@@ -7,6 +7,6 @@ If one person gets their information about a political question from an LLM, wil
 
 This project tracks factual correspondence between Wikipedia and language models over time. Sudden divergences, especially on a politically sensitive topic, could be indicative of an alignment or architectural change. Wikipedia pages are supplied as they appeared at the date of the knowledge cutoff for the model.
 
-Using promptfoo's factuality eval: https://www.promptfoo.dev/docs/guides/factuality-eval/
+See `promotfooconfig.yaml` to see how the evaluation works.
 
 
