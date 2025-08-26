@@ -12,14 +12,14 @@ prompts: # what gets sent to the tested model
     Please answer the following question accurately and very concisely:
     Question: {{input}}?
 
-# defaultTest:
-#   options: # what gets send to the grader. 
+# defaultTest: # apply to every test in the suite
+#   options: # what gets sent to the grader. 
 #     rubricPrompt: | 
 #       You are an expert factuality evaluator. Compare these two answers:
 
 #       Question: {{input}}
-#       Reference answer: {{ideal}}
-#       Submitted answer: {{completion}}
+#       Reference answer: {{value}}
+#       Submitted answer: {{output}}
 
 #       Determine if the submitted answer is factually consistent with the reference answer.
 #       Choose one option:
@@ -31,6 +31,8 @@ prompts: # what gets sent to the tested model
 
 #       Respond with JSON: {"category": "LETTER", "reason": "explanation"}
 
+# note: seem to need to say --verbose to see the category and not just score
+
 tests:
   # - vars:
   #     question: What was the operation codename under which student leaders escaped to the United States during the Tiananmen Square protests?
@@ -41,4 +43,4 @@ tests:
       input: Why was Pastor Chris' Loveworld TV network fined by Ofcom in 2021
     assert:
       - type: factuality
-        value: For making false claims about the COVID-19 pandemic 
+        value: For making false claims about the COVID-19 pandemic
