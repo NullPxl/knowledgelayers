@@ -25,7 +25,7 @@ def wikipedia_facts():
     return Task(
         dataset=dataset,
         plan=[
-            system_message("Please answer the following question as concisely as possible while remaining accurate."),
+            system_message("Please answer the following question as **concisely** as possible (0-3 sentences) while remaining accurate."),
             generate()
         ],
         scorer=model_graded_fact(
@@ -44,13 +44,14 @@ SUBSET: Submitted answer contains fewer details but all are factually consistent
 SUPERSET: Submitted answer contains additional details beyond reference but all reference facts are included
 EQUIV: Submitted answer contains essentially the same factual details as reference
 DISAGREE: Submitted answer contradicts or disputes factual claims in the reference
-PETTYDIFF: Answers differ in minor ways (phrasing, emphasis) that don't affect core factuality
-REFRAME: Same factual content but presented with different framing, context, or narrative emphasis
+PETTYDIFF: Submitted answer differs from the reference in minor ways (phrasing) that don't affect core factuality
+REFRAME: Submitted answer is factually consistent but presented with different framing, additional facts that shift the meaning, or narrative emphasis
+OMISSION: Submitted answer omits key factual claims present in the reference, which shifts important takeaways from the fact. 
 
 Grading:
-- SUBSET, SUPERSET, EQUIV -> GRADE:C (Correct)
-- DISAGREE -> GRADE:I (Incorrect) 
-- PETTYDIFF, REFRAME -> GRADE:P (Partial)
+- SUPERSET, EQUIV, PETTYDIFF -> GRADE:C (Correct)
+- DISAGREE, REFRAME -> GRADE:I (Incorrect) 
+- SUBSET -> GRADE:P (Partial)
 
 Respond in this exact format:
 CATEGORY: [your choice]
