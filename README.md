@@ -25,6 +25,8 @@ CONTRADICTS: LLM directly contradicts factual claims in Wikipedia
 
 My testing here isn't attempting to prove "Wikipedia = Better". It's looking for differences in what we see when accessing knowledge in different ways.
 
+I'll be updating this google doc with some of the findings: https://docs.google.com/document/d/1mXsNy1C0F21mxWaN3LdYmpIypuaUzl_rdJnsL1oBjhE/edit?usp=sharing
+
 ---
 
 I'm using the [inspect-ai](https://inspect.aisi.org.uk/) framework to set up the evaluations. Please see `info_compare_eval.py` if you're curious about more technical details.

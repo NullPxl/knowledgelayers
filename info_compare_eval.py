@@ -27,7 +27,7 @@ def compare_answers(data):
             generate()
         ],
         scorer=model_graded_fact(
-            model="openai/gpt-5-nano", # TODO: pass multiple models for majority vote
+            model="openai/gpt-5-mini", # TODO: pass multiple models for majority vote... challenge here is diff models have diff knowledge cutoffs
             partial_credit=True,
             template="""
 You are evaluating how an LLM's answer differs from Wikipedia.
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     for model in models:
         print(f"Evaluating {model}...")
         result = eval(
-            compare_answers('Canadaconvoyprotest.csv'),
+            compare_answers('Listof2022FIFAWorldCupcontroversies.csv'),
             model=model,
             log_dir=f"logs"
         )
