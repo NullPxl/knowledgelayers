@@ -42,3 +42,15 @@ I'm using the [inspect-ai](https://inspect.aisi.org.uk/) framework to set up the
 ![""](resources/inspect_ai_eval_ex.png)
 6. **Run `inspect view`** and open the page in your browser to view results (sort descending by score to see most contradictory responses)
 ![""](resources/inspect_view_ex.png)
+
+## Time-Series Simulation + Stacked Area Viz
+To simulate repeated weekly runs for one article and visualize category drift over time:
+
+1. Install extra dependencies for parquet + interactive charting:
+   - `pip install pyarrow plotly`
+2. Generate 5 QA datasets (50 QAs each) from one article and run eval for each:
+   - `python simulate_article_timeseries.py --article "Blackwater (company)" --runs 5 --qa-per-run 50 --test-model openai/gpt-5-mini`
+3. Export Inspect logs to parquet tables:
+   - `python export_eval_parquets.py --logs-dir logs --output-dir analytics --synthetic-base-date 2025-01-01`
+4. Build interactive stacked area chart:
+   - `python viz_category_area.py --runs-parquet analytics/eval_runs.parquet --output-html analytics/category_stacked_area.html`
