@@ -25,6 +25,23 @@ def parse_article_name(dataset_name: str) -> str:
     return WEEK_SUFFIX_PATTERN.sub("", stem)
 
 
+def infer_run_label(eval_path: Path) -> str | None:
+    parts = list(eval_path.parts)
+    try:
+        runs_idx = parts.index("runs")
+    except ValueError:
+        return None
+    if runs_idx + 1 < len(parts):
+        return parts[runs_idx + 1]
+    return None
+
+
+def collect_eval_files(logs_dir: Path, recursive: bool) -> list[Path]:
+    if recursive:
+        return sorted(logs_dir.rglob("*.eval"))
+    return sorted(logs_dir.glob("*.eval"))
+
+
 def load_eval_rows(eval_path: Path, synthetic_base_date: datetime | None):
     with zipfile.ZipFile(eval_path) as archive:
         header = json.loads(archive.read("header.json"))
@@ -35,6 +52,7 @@ def load_eval_rows(eval_path: Path, synthetic_base_date: datetime | None):
     created = datetime.fromisoformat(run["created"])
     week_index = parse_week_index(dataset_name)
     article = parse_article_name(dataset_name)
+    run_label = infer_run_label(eval_path)
 
     if synthetic_base_date is not None and week_index is not None:
         run_time = synthetic_base_date + timedelta(days=(week_index - 1) * 7)
@@ -54,6 +72,7 @@ def load_eval_rows(eval_path: Path, synthetic_base_date: datetime | None):
                 "model": run.get("model"),
                 "dataset": dataset_name,
                 "article": article,
+                "run_label": run_label,
                 "created": created.isoformat(),
                 "run_time": run_time.isoformat(),
                 "week_index": week_index,
@@ -74,7 +93,18 @@ def load_eval_rows(eval_path: Path, synthetic_base_date: datetime | None):
 def build_run_rows(samples_df: pd.DataFrame) -> pd.DataFrame:
     rows = []
     grouped = samples_df.groupby(
-        ["eval_file", "run_id", "task_id", "model", "dataset", "article", "created", "run_time", "week_index"],
+        [
+            "eval_file",
+            "run_id",
+            "task_id",
+            "model",
+            "dataset",
+            "article",
+            "run_label",
+            "created",
+            "run_time",
+            "week_index",
+        ],
         dropna=False,
     )
     for keys, group in grouped:
@@ -85,6 +115,7 @@ def build_run_rows(samples_df: pd.DataFrame) -> pd.DataFrame:
             model,
             dataset,
             article,
+            run_label,
             created,
             run_time,
             week_index,
@@ -100,6 +131,7 @@ def build_run_rows(samples_df: pd.DataFrame) -> pd.DataFrame:
             "model": model,
             "dataset": dataset,
             "article": article,
+            "run_label": run_label,
             "created": created,
             "run_time": run_time,
             "week_index": week_index,
@@ -119,9 +151,14 @@ def main() -> None:
     parser.add_argument("--logs-dir", default="logs", help="Directory containing .eval files")
     parser.add_argument("--output-dir", default="analytics", help="Directory to write Parquet files")
     parser.add_argument(
+        "--recursive",
+        action="store_true",
+        help="Recursively discover .eval files under logs-dir",
+    )
+    parser.add_argument(
         "--synthetic-base-date",
-        default="2026-02-01",
-        help="YYYY-MM-DD base for synthetic weekly time when dataset uses __weekNN suffix",
+        default=None,
+        help="Optional YYYY-MM-DD base for synthetic weekly time when dataset uses __weekNN suffix",
     )
     args = parser.parse_args()
 
@@ -129,10 +166,14 @@ def main() -> None:
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    synthetic_base_date = datetime.fromisoformat(args.synthetic_base_date).replace(tzinfo=timezone.utc)
-    eval_files = sorted(logs_dir.glob("*.eval"))
+    synthetic_base_date = None
+    if args.synthetic_base_date:
+        synthetic_base_date = datetime.fromisoformat(args.synthetic_base_date).replace(tzinfo=timezone.utc)
+
+    eval_files = collect_eval_files(logs_dir, recursive=args.recursive)
     if not eval_files:
-        raise FileNotFoundError(f"No .eval files found in {logs_dir}")
+        scope = "recursively" if args.recursive else "directly"
+        raise FileNotFoundError(f"No .eval files found {scope} under {logs_dir}")
 
     sample_rows = []
     for eval_file in eval_files:

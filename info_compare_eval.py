@@ -16,7 +16,7 @@ import re
 JUDGE_MODELS = ["openai/gpt-5-mini", "openai/gpt-5-nano", "openai/gpt-4o-mini"]
 TEST_MODELS = ["openai/gpt-5-mini"]
 
-QUESTION_TARGET_SET = "FalunGong.csv"
+QUESTION_TARGET_SET = "NSOGroup.csv"
 QUESTION_TARGET_DIR = Path("wikipedia_QAs")
 # TODO: separate question sets into folders based on region/culture
 

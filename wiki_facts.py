@@ -424,11 +424,23 @@ async def generate_validated_qa_pairs(wikipedia_content, topic_name, num_pairs):
         print("- rejection_reasons: none")
     return validated[:num_pairs]
 
-# TODO: If the fact became available after the LLM's knowledge cutoff date, 
-# it shouldn't be expected that the model has that information without access to web search. 
-# It's unfair to test the LLM on that information (or to infer any kind of bias from it). 
-# So, models are only tested on facts added to Wikipedia prior to the knowledge cutoff date. 
-#   Collect fact addition date from wikiblame? or, grab the source wikipedia cites for each claim and see date from that
+# TODO(knowledge-cutoff-fairness):
+# Add per-fact provenance timing so eval avoids penalizing models for post-cutoff facts.
+# Plan:
+# 1) For each accepted QA pair, find `fact_added` = earliest revision timestamp where the fact text appears.
+# 2) Extract citation(s) linked to that fact and find `associated_src_added` = earliest revision timestamp
+#    where that citation/ref appears.
+# 3) Store per-row metadata:
+#    - fact_added
+#    - associated_src_added
+#    - associated_src_id
+#    - provenance_method
+#    - provenance_confidence
+# 4) Apply cutoff filter against `knowledge_cutoff`:
+#    - Exclude when provenance is known and newer than cutoff.
+#    - Lenient default: if citation linkage fails (`associated_src_added=None`), PASS (keep row),
+#      and mark that this row used lenient fallback.
+# 5) Log counts for: excluded_newer_than_cutoff, passed_lenient_no_citation_linkage, passed_with_provenance.
 
 def sanitize_filename(topic):
     """Create a safe filename from the topic name (remove spaces/punctuation)."""
